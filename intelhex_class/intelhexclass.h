@@ -7,7 +7,7 @@
 *                                                                              *
 * This class is constructed based upon the definition given in the document    *
 * 'Hexadecimal Object File Format Specification', Revision A, January 6, 1988, *
-* © 1998 Intel Corporation                                                     *
+* � 1998 Intel Corporation                                                     *
 *------------------------------------------------------------------------------*
 * class intelhex                                                               *
 *   Member Functions:                                                          *
@@ -24,7 +24,7 @@
 *
 * This class is constructed based upon the definition given in the document
 * 'Hexadecimal Object File Format Specification', Revision A, January 6, 1988,
-* © 1998 Intel Corporation.
+* � 1998 Intel Corporation.
 ********************************************************************************
 * \note See the git versioning notes for version information
 *
@@ -45,6 +45,7 @@
 #include <iostream>
 #include <map>
 #include <list>
+#include <utility>
 
 /*******************************************************************************
 *                                    EXTERNS
@@ -154,10 +155,6 @@ private:
 	* functions.
 	***********************************************************************/
 	unsigned long segmentBaseAddress;
-
-
-	using iterator = decltype(ihContent)::iterator;
-	using const_iterator = decltype(ihContent)::const_iterator;
 
 
 	/**********************************************************************/
@@ -369,7 +366,48 @@ private:
 	***********************************************************************/
 	void addError(std::string errorMessage);
 
+	struct HexData {
+		const unsigned long address;
+		const unsigned char data;
+	};
+
 public:
+	class const_iterator : public std::iterator<std::input_iterator_tag,
+		HexData,
+		HexData,
+		const HexData*,
+		HexData
+	> {
+	private:
+		decltype(ihContent)::const_iterator mIterator;
+	public:
+		explicit const_iterator(decltype(ihContent)::const_iterator content) : mIterator(content) {}
+		const const_iterator& operator++() { mIterator++; return *this; }
+		const const_iterator operator++(int) { const_iterator retval = *this; ++(*this); return retval; }
+		bool operator==(const_iterator other) const { return mIterator == other.mIterator; }
+		bool operator!=(const_iterator other) const { return !(*this == other); }
+		HexData operator*() const { return HexData{ mIterator->first, mIterator->second }; }
+	};
+
+	const_iterator begin() const
+	{
+		return const_iterator{ihContent.begin()};
+	}
+
+	const_iterator cbegin() const
+	{
+		return const_iterator{ihContent.cbegin()};
+	}
+
+	const_iterator end() const
+	{
+		return const_iterator{ihContent.end()};
+	}
+
+	const_iterator cend() const
+	{
+		return const_iterator{ihContent.cend()};
+	}
 	/**********************************************************************/
 	/*! \brief intelhex Class Constructor.
 	*
@@ -592,26 +630,6 @@ public:
 			ihIterator = ihContent.end();
 			--ihIterator;
 		}
-	}
-
-	decltype(ihContent)::const_iterator begin() const
-	{
-		return ihContent.begin();
-	}
-
-	decltype(ihContent)::const_iterator cbegin() const
-	{
-		return ihContent.cbegin();
-	}
-
-	decltype(ihContent)::const_iterator end() const
-	{
-		return ihContent.end();
-	}
-
-	decltype(ihContent)::const_iterator cend() const
-	{
-		return ihContent.cend();
 	}
 
 	/**********************************************************************/
